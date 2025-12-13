@@ -21,3 +21,5 @@ web/
 # Generated
 **/*.g.dart
 **/*.freezed.dart
+lifemerge-flutter.txt
+combine_md.sh
