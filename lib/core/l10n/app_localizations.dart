@@ -46,6 +46,9 @@ class AppLocalizations {
   String get passwordTooShort =>
       isRu ? 'Минимум 8 символов' : 'Minimum 8 characters';
   String get forgotPassword => isRu ? 'Забыли пароль?' : 'Forgot password?';
+  String get resetPassword => isRu ? 'Восстановить доступ' : 'Reset access';
+  String get resetPasswordSent =>
+      isRu ? 'Письмо для восстановления отправлено' : 'Recovery email sent';
   String get errorTitle => isRu ? 'Ошибка' : 'Error';
   String get genericError =>
       isRu ? 'Что-то пошло не так. Попробуйте позже.' : 'Something went wrong. Try again later.';
@@ -54,6 +57,9 @@ class AppLocalizations {
   String get loading => isRu ? 'Загрузка…' : 'Loading…';
   String get signUpSuccess =>
       isRu ? 'Аккаунт создан! Проверьте почту.' : 'Account created! Check your inbox.';
+  String get logout => isRu ? 'Выйти' : 'Log out';
+  String get logoutDescription =>
+      isRu ? 'Очистить сессию и вернуться на экран входа' : 'Clear your session and return to sign in';
 }
 
 class _AppLocalizationsDelegate

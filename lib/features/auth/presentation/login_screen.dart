@@ -72,6 +72,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
     }
 
+    Future<void> handlePasswordReset() async {
+      final emailError = _validateEmail(_emailController.text.trim(), l10n);
+      if (emailError != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(emailError)),
+        );
+        return;
+      }
+
+      final success = await authController.requestPasswordReset(_emailController.text.trim());
+      if (!mounted) return;
+      final updatedState = ref.read(authControllerProvider);
+      final message = success ? l10n.resetPasswordSent : (updatedState.errorMessage ?? l10n.genericError);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Container(
@@ -134,11 +152,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: TextButton(
-                              onPressed: state.isLoading
-                                  ? null
-                                  : () => ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text(l10n.genericError)),
-                                      ),
+                              onPressed: state.isLoading ? null : handlePasswordReset,
                               child: Text(l10n.forgotPassword),
                             ),
                           ),
