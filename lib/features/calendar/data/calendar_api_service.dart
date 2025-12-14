@@ -41,6 +41,7 @@ class CalendarApiService {
       id: event.id.isEmpty || event.id.startsWith('local') ? _generateId() : event.id,
       createdAt: event.createdAt == event.updatedAt ? now : event.createdAt,
       updatedAt: now,
+      taskId: event.taskId,
       deleted: false,
     );
     _remoteEvents.removeWhere((existing) => existing.id == created.id);
@@ -56,6 +57,7 @@ class CalendarApiService {
       description: event.description,
       startAt: event.startAt,
       endAt: event.endAt,
+      taskId: event.taskId,
       status: event.status,
       updatedAt: DateTime.now(),
     );

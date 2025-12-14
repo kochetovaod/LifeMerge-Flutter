@@ -3,9 +3,21 @@ import 'package:flutter/material.dart';
 import '../../domain/calendar_event.dart';
 
 class EventFormSheet extends StatefulWidget {
-  const EventFormSheet({super.key, this.initialEvent, required this.onSubmit});
+  const EventFormSheet({
+    super.key,
+    this.initialEvent,
+    this.initialStartAt,
+    this.initialEndAt,
+    this.initialTaskId,
+    this.initialTaskTitle,
+    required this.onSubmit,
+  });
 
   final CalendarEvent? initialEvent;
+  final DateTime? initialStartAt;
+  final DateTime? initialEndAt;
+  final String? initialTaskId;
+  final String? initialTaskTitle;
   final void Function(CalendarEventDraft) onSubmit;
 
   @override
@@ -17,6 +29,8 @@ class _EventFormSheetState extends State<EventFormSheet> {
   late final TextEditingController _descriptionController;
   late DateTime _startAt;
   DateTime? _endAt;
+  String? _taskId;
+  String? _taskTitle;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
@@ -25,8 +39,11 @@ class _EventFormSheetState extends State<EventFormSheet> {
     _titleController = TextEditingController(text: widget.initialEvent?.title ?? '');
     _descriptionController =
         TextEditingController(text: widget.initialEvent?.description ?? '');
-    _startAt = widget.initialEvent?.startAt ?? DateTime.now();
-    _endAt = widget.initialEvent?.endAt;
+    _startAt =
+        widget.initialEvent?.startAt ?? widget.initialStartAt ?? DateTime.now();
+    _endAt = widget.initialEvent?.endAt ?? widget.initialEndAt;
+    _taskId = widget.initialEvent?.taskId ?? widget.initialTaskId;
+    _taskTitle = widget.initialTaskTitle;
   }
 
   @override
@@ -99,6 +116,7 @@ class _EventFormSheetState extends State<EventFormSheet> {
       description: _descriptionController.text.trim().isEmpty
           ? null
           : _descriptionController.text.trim(),
+      taskId: _taskId,
     );
     widget.onSubmit(draft);
     Navigator.of(context).pop();
@@ -124,6 +142,44 @@ class _EventFormSheetState extends State<EventFormSheet> {
               style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: 12),
+            if (_taskId != null)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.secondaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const Icon(Icons.link, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Linked task',
+                            style: theme.textTheme.labelLarge,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _taskTitle ?? _taskId!,
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => setState(() => _taskId = null),
+                      tooltip: 'Remove link',
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
             TextFormField(
               controller: _titleController,
               decoration: const InputDecoration(labelText: 'Title'),
