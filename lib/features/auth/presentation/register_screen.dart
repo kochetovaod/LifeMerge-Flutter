@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../application/auth_controller.dart';
 import '../application/auth_state.dart';
+import '../domain/auth_error_code.dart';
 import 'widgets/auth_text_field.dart';
 import 'widgets/primary_button.dart';
 
@@ -74,6 +75,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     return null;
   }
 
+  String _resolveError(AuthState state, AppLocalizations l10n) {
+    switch (state.errorCode) {
+      case AuthErrorCode.incorrectCredentials:
+        return l10n.incorrectCredentials;
+      case AuthErrorCode.accountExists:
+        return l10n.accountExists;
+      case AuthErrorCode.userNotFound:
+        return l10n.userNotFound;
+      case AuthErrorCode.unknown:
+      case null:
+        return state.errorMessage ?? l10n.genericError;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -83,7 +98,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final authController = ref.read(authControllerProvider.notifier);
 
     void clearError(String value) {
-      if (state.errorMessage != null) {
+      if (state.errorMessage != null || state.errorCode != null) {
         authController.clearError();
       }
     }
@@ -181,17 +196,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               } else {
                                 final updatedState =
                                     ref.read(authControllerProvider);
-                                if (updatedState.errorMessage != null) {
+                                if (updatedState.errorMessage != null || updatedState.errorCode != null) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text(updatedState.errorMessage!),
+                                      content: Text(_resolveError(updatedState, l10n)),
                                     ),
                                   );
                                 }
                               }
                             },
                           ),
-                          if (state.errorMessage != null) ...<Widget>[
+                          if (state.errorMessage != null || state.errorCode != null) ...<Widget>[
                             const SizedBox(height: 12),
                             Container(
                               width: double.infinity,
@@ -206,7 +221,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      state.errorMessage!,
+                                      _resolveError(state, l10n),
                                       style: AppTypography.body.copyWith(
                                         color: theme.colorScheme.error,
                                       ),

@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/analytics/analytics_service.dart';
+import '../data/auth_api_service.dart';
 import '../data/auth_repository.dart';
+import '../domain/auth_error_code.dart';
 import 'auth_state.dart';
 
 class AuthController extends StateNotifier<AuthState> {
@@ -22,13 +24,23 @@ class AuthController extends StateNotifier<AuthState> {
         isAuthenticated: true,
         email: session.email,
         token: session.token,
+        errorCode: null,
       );
       return true;
+    } on AuthApiException catch (error) {
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        errorMessage: error.toString(),
+        errorCode: error.code,
+      );
+      return false;
     } catch (error) {
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: false,
         errorMessage: error.toString(),
+        errorCode: AuthErrorCode.unknown,
       );
       return false;
     }
@@ -45,13 +57,23 @@ class AuthController extends StateNotifier<AuthState> {
         isAuthenticated: true,
         email: session.email,
         token: session.token,
+        errorCode: null,
       );
       return true;
+    } on AuthApiException catch (error) {
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        errorMessage: error.toString(),
+        errorCode: error.code,
+      );
+      return false;
     } catch (error) {
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: false,
         errorMessage: error.toString(),
+        errorCode: AuthErrorCode.unknown,
       );
       return false;
     }
@@ -63,8 +85,19 @@ class AuthController extends StateNotifier<AuthState> {
       await _repository.requestPasswordReset(email);
       state = state.copyWith(isLoading: false, clearError: true);
       return true;
+    } on AuthApiException catch (error) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: error.toString(),
+        errorCode: error.code,
+      );
+      return false;
     } catch (error) {
-      state = state.copyWith(isLoading: false, errorMessage: error.toString());
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: error.toString(),
+        errorCode: AuthErrorCode.unknown,
+      );
       return false;
     }
   }
@@ -76,6 +109,18 @@ class AuthController extends StateNotifier<AuthState> {
       await _repository.logout(token);
     }
     state = const AuthState();
+  }
+
+  Future<void> restoreSession() async {
+    final session = await _repository.restore();
+    if (session != null) {
+      state = state.copyWith(
+        isAuthenticated: true,
+        email: session.email,
+        token: session.token,
+        clearError: true,
+      );
+    }
   }
 
   void clearError() {
