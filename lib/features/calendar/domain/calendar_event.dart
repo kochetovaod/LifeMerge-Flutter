@@ -10,6 +10,7 @@ class CalendarEvent {
     required this.startAt,
     this.endAt,
     this.description,
+    this.taskId,
     this.status = CalendarEventStatus.scheduled,
     required this.createdAt,
     required this.updatedAt,
@@ -21,6 +22,7 @@ class CalendarEvent {
   final DateTime startAt;
   final DateTime? endAt;
   final String? description;
+  final String? taskId;
   final CalendarEventStatus status;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -32,6 +34,7 @@ class CalendarEvent {
     DateTime? startAt,
     DateTime? endAt,
     String? description,
+    String? taskId,
     CalendarEventStatus? status,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -43,6 +46,7 @@ class CalendarEvent {
       startAt: startAt ?? this.startAt,
       endAt: endAt ?? this.endAt,
       description: description ?? this.description,
+      taskId: taskId ?? this.taskId,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -57,10 +61,12 @@ class CalendarEventDraft {
     required this.startAt,
     this.endAt,
     this.description,
+    this.taskId,
   });
 
   final String title;
   final DateTime startAt;
   final DateTime? endAt;
   final String? description;
+  final String? taskId;
 }

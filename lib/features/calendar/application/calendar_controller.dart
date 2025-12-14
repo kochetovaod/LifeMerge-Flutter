@@ -40,6 +40,7 @@ class CalendarController extends StateNotifier<CalendarState> {
       description: draft.description,
       startAt: draft.startAt,
       endAt: draft.endAt,
+      taskId: draft.taskId,
       status: CalendarEventStatus.scheduled,
       createdAt: now,
       updatedAt: now,
@@ -60,6 +61,7 @@ class CalendarController extends StateNotifier<CalendarState> {
       description: draft.description,
       startAt: draft.startAt,
       endAt: draft.endAt,
+      taskId: draft.taskId ?? event.taskId,
       updatedAt: DateTime.now(),
     );
 
