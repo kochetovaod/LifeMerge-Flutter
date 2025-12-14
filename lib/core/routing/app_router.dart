@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/shell/presentation/app_shell.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/calendar/presentation/calendar_day_screen.dart';
 import '../../features/tasks/presentation/tasks_screen.dart';
@@ -18,6 +19,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.login,
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: Routes.register,
+        builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
         path: Routes.onboarding,

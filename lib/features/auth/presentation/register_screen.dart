@@ -11,29 +11,35 @@ import '../application/auth_state.dart';
 import 'widgets/auth_text_field.dart';
 import 'widgets/primary_button.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends ConsumerStatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
+  late final TextEditingController _nameController;
   late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
+  late final TextEditingController _confirmController;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
+    _nameController = TextEditingController();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
+    _confirmController = TextEditingController();
   }
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmController.dispose();
     super.dispose();
   }
 
@@ -54,6 +60,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
     if (value.length < 8) {
       return l10n.passwordTooShort;
+    }
+    return null;
+  }
+
+  String? _validateConfirm(String? value, AppLocalizations l10n) {
+    if (value == null || value.isEmpty) {
+      return l10n.fieldRequired;
+    }
+    if (value != _passwordController.text) {
+      return l10n.passwordsDoNotMatch;
     }
     return null;
   }
@@ -102,12 +118,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: 32),
                     Text(
-                      l10n.loginTitle,
+                      l10n.registerTitle,
                       style: AppTypography.h2.copyWith(color: theme.colorScheme.onSurface),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      l10n.loginSubtitle,
+                      l10n.registerSubtitle,
                       style: AppTypography.body.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.7)),
                     ),
                     const SizedBox(height: 32),
@@ -115,6 +131,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       key: _formKey,
                       child: Column(
                         children: <Widget>[
+                          AuthTextField(
+                            label: l10n.nameLabel,
+                            controller: _nameController,
+                            onChanged: clearError,
+                          ),
+                          const SizedBox(height: 16),
                           AuthTextField(
                             label: l10n.emailLabel,
                             controller: _emailController,
@@ -130,19 +152,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             validator: (value) => _validatePassword(value, l10n),
                             onChanged: clearError,
                           ),
-                          const SizedBox(height: 12),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: TextButton(
-                              onPressed: state.isLoading
-                                  ? null
-                                  : () => ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text(l10n.genericError)),
-                                      ),
-                              child: Text(l10n.forgotPassword),
-                            ),
+                          const SizedBox(height: 16),
+                          AuthTextField(
+                            label: l10n.confirmPasswordLabel,
+                            controller: _confirmController,
+                            obscureText: true,
+                            validator: (value) => _validateConfirm(value, l10n),
+                            onChanged: clearError,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           PrimaryButton(
                             label: l10n.continueButton,
                             isLoading: state.isLoading,
@@ -150,12 +168,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               if (!_formKey.currentState!.validate()) {
                                 return;
                               }
-                              final success = await authController.signIn(
+                              final success = await authController.signUp(
                                 email: _emailController.text.trim(),
                                 password: _passwordController.text,
                               );
                               if (!mounted) return;
                               if (success) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(l10n.signUpSuccess)),
+                                );
                                 context.go(Routes.onboarding);
                               } else {
                                 final updatedState =
@@ -203,14 +224,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Text(
-                          l10n.noAccountYet,
+                          l10n.haveAccount,
                           style: AppTypography.body.copyWith(
                             color: theme.colorScheme.onSurface.withOpacity(0.8),
                           ),
                         ),
                         TextButton(
-                          onPressed: state.isLoading ? null : () => context.go(Routes.register),
-                          child: Text(l10n.createAccount),
+                          onPressed: state.isLoading ? null : () => context.go(Routes.login),
+                          child: Text(l10n.signIn),
                         ),
                       ],
                     ),
