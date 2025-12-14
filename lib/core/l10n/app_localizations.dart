@@ -49,6 +49,12 @@ class AppLocalizations {
   String get resetPassword => isRu ? 'Восстановить доступ' : 'Reset access';
   String get resetPasswordSent =>
       isRu ? 'Письмо для восстановления отправлено' : 'Recovery email sent';
+  String get incorrectCredentials =>
+      isRu ? 'Неправильный логин или пароль' : 'Incorrect email or password';
+  String get accountExists =>
+      isRu ? 'Аккаунт с этим email уже существует' : 'Account already exists for this email';
+  String get userNotFound =>
+      isRu ? 'Пользователь не найден' : 'User not found';
   String get errorTitle => isRu ? 'Ошибка' : 'Error';
   String get genericError =>
       isRu ? 'Что-то пошло не так. Попробуйте позже.' : 'Something went wrong. Try again later.';

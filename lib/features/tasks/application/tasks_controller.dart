@@ -13,9 +13,11 @@ class TasksController extends StateNotifier<TasksState> {
   }
 
   final TasksRepository _repository;
+  Timer? _retryTimer;
 
   Future<void> _loadTasks() async {
     state = state.copyWith(isLoading: true, clearError: true);
+    await _flushQueue(force: true);
     try {
       final tasks = await _repository.fetchTasks();
       state = state.copyWith(tasks: tasks, isLoading: false, clearError: true);
@@ -30,8 +32,7 @@ class TasksController extends StateNotifier<TasksState> {
   Future<void> refresh() => _loadTasks();
 
   Future<void> syncPending() async {
-    if (state.isOffline) return;
-    await _flushQueue();
+    await _flushQueue(force: true);
   }
 
   Future<void> addTask(TaskDraft draft) async {
@@ -94,7 +95,7 @@ class TasksController extends StateNotifier<TasksState> {
     final wasOffline = state.isOffline;
     state = state.copyWith(isOffline: !state.isOffline);
     if (wasOffline && !state.isOffline) {
-      unawaited(_flushQueue());
+      unawaited(_flushQueue(force: true));
     }
   }
 
@@ -132,14 +133,22 @@ class TasksController extends StateNotifier<TasksState> {
     state = state.copyWith(
       pendingOperations: <PendingTaskOperation>[...state.pendingOperations, operation],
     );
+    _scheduleRetry();
   }
 
-  Future<void> _flushQueue() async {
+  Future<void> _flushQueue({bool force = false}) async {
     if (state.pendingOperations.isEmpty) {
+      _cancelRetry();
+      return;
+    }
+
+    if (state.isOffline && !force) {
+      _scheduleRetry();
       return;
     }
 
     final List<PendingTaskOperation> remaining = <PendingTaskOperation>[];
+    var hadError = false;
     for (final operation in state.pendingOperations) {
       try {
         switch (operation.type) {
@@ -157,11 +166,21 @@ class TasksController extends StateNotifier<TasksState> {
             break;
         }
       } catch (error) {
+        hadError = true;
         remaining.add(operation);
       }
     }
 
-    state = state.copyWith(pendingOperations: remaining);
+    state = state.copyWith(
+      pendingOperations: remaining,
+      isOffline: hadError && remaining.isNotEmpty,
+    );
+
+    if (remaining.isEmpty) {
+      _cancelRetry();
+    } else {
+      _scheduleRetry();
+    }
   }
 
   Future<void> _executeCreate(Task pendingTask) async {
@@ -208,6 +227,17 @@ class TasksController extends StateNotifier<TasksState> {
   String _generateRequestId({String prefix = 'req'}) {
     final timestamp = DateTime.now().microsecondsSinceEpoch;
     return '$prefix-$timestamp';
+  }
+
+  void _scheduleRetry() {
+    _retryTimer ??= Timer.periodic(const Duration(seconds: 4), (_) {
+      unawaited(_flushQueue(force: true));
+    });
+  }
+
+  void _cancelRetry() {
+    _retryTimer?.cancel();
+    _retryTimer = null;
   }
 }
 

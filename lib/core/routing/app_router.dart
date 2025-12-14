@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/shell/presentation/app_shell.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/auth/application/auth_controller.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/calendar/presentation/calendar_day_screen.dart';
 import '../../features/tasks/presentation/tasks_screen.dart';
@@ -13,8 +14,27 @@ import '../../features/pro/presentation/pro_screen.dart';
 import 'routes.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final authNotifier = ref.read(authControllerProvider.notifier);
+  final authState = ref.watch(authControllerProvider);
+
   return GoRouter(
     initialLocation: Routes.login,
+    refreshListenable: GoRouterRefreshStream(authNotifier.stream),
+    redirect: (context, state) {
+      final isAuthRoute =
+          state.matchedLocation == Routes.login || state.matchedLocation == Routes.register;
+      final isAuthenticated = authState.isAuthenticated;
+
+      if (!isAuthenticated && !isAuthRoute) {
+        return Routes.login;
+      }
+
+      if (isAuthenticated && isAuthRoute) {
+        return Routes.tasks;
+      }
+
+      return null;
+    },
     routes: <RouteBase>[
       GoRoute(
         path: Routes.login,

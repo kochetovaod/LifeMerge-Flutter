@@ -1,3 +1,5 @@
+import '../domain/auth_error_code.dart';
+
 class AuthState {
   const AuthState({
     this.isLoading = false,
@@ -5,6 +7,7 @@ class AuthState {
     this.email,
     this.token,
     this.errorMessage,
+    this.errorCode,
   });
 
   final bool isLoading;
@@ -12,6 +15,7 @@ class AuthState {
   final String? email;
   final String? token;
   final String? errorMessage;
+  final AuthErrorCode? errorCode;
 
   AuthState copyWith({
     bool? isLoading,
@@ -19,6 +23,7 @@ class AuthState {
     String? email,
     String? token,
     String? errorMessage,
+    AuthErrorCode? errorCode,
     bool clearError = false,
   }) {
     return AuthState(
@@ -26,7 +31,8 @@ class AuthState {
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       email: email ?? this.email,
       token: token ?? this.token,
-      errorMessage: clearError ? null : errorMessage,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      errorCode: clearError ? null : (errorCode ?? this.errorCode),
     );
   }
 }
